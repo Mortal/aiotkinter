@@ -1,15 +1,11 @@
 import asyncio
-try:
-    import selectors
-except ImportError:
-    import asyncio.selectors as selectors
 import tkinter
 import sys
 
 if sys.platform == 'win32':
     raise ImportError('%s is not available on your platform'.format(__name__))
 
-class _TkinterSelector(selectors._BaseSelectorImpl):
+class _TkinterSelector(asyncio.selectors._BaseSelectorImpl):
 
     def __init__(self):
         super().__init__()
@@ -19,17 +15,17 @@ class _TkinterSelector(selectors._BaseSelectorImpl):
     def register(self, fileobj, events, data=None):
         key = super().register(fileobj, events, data)
         mask = 0
-        if events & selectors.EVENT_READ:
+        if events & asyncio.selectors.EVENT_READ:
             mask |= tkinter.READABLE
-        if events & selectors.EVENT_WRITE:
+        if events & asyncio.selectors.EVENT_WRITE:
             mask |= tkinter.WRITABLE
         def ready(fd, mask):
             assert key.fd == fd
             events = 0
             if mask & tkinter.READABLE:
-                events |= selectors.EVENT_READ
+                events |= asyncio.selectors.EVENT_READ
             if mask & tkinter.WRITABLE:
-                events |= selectors.EVENT_WRITE
+                events |= asyncio.selectors.EVENT_WRITE
             self._ready.append((key, events))
         self._tk.createfilehandler(key.fd, mask, ready)
         return key

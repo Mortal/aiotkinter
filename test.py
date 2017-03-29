@@ -1,3 +1,6 @@
+import os
+import select
+import threading
 import asyncio
 import aiotkinter
 import tkinter
@@ -19,9 +22,7 @@ def async_cb(coro_fn, loop):
 
 
 def main():
-    asyncio.set_event_loop_policy(aiotkinter.TkinterEventLoopPolicy())
-    loop = asyncio.get_event_loop()  # type: asyncio.BaseEventLoop
-    quitted = asyncio.Event(loop=loop)
+    loop = aiotkinter.TkinterEventLoopPolicy().new_event_loop()
 
     root = tkinter.Tk()
     text = "This is Tcl/Tk version %s" % tkinter.TclVersion
@@ -34,10 +35,17 @@ def main():
     test.pack()
     root.test = test
 
+    def really_quit():
+        root.destroy()
+        loop.stop()
+
     async def quit_action():
         if tkinter.messagebox.askyesno('Quit?', 'Really quit?'):
-            root.destroy()
-            quitted.set()
+            really_quit()
+
+    def quit_readable():
+        os.read(quit_r, 1)
+        really_quit()
 
     root.protocol("WM_DELETE_WINDOW", quit_action)
     quit = tkinter.Button(root, text="QUIT",
@@ -50,8 +58,20 @@ def main():
     root.deiconify()
     # root.mainloop()
     asyncio.ensure_future(async_loop(), loop=loop)
-    loop.run_until_complete(quitted.wait())
+    loop.add_reader(quit_r, quit_readable)
+    loop.run_forever()
+    main_quitted.set()
 
 
 if __name__ == '__main__':
-    main()
+    quit_r, quit_w = os.pipe()
+    main_quitted = threading.Event()
+    thread = threading.Thread(None, main)
+    thread.start()
+    while True:
+        try:
+            main_quitted.wait()
+            break
+        except KeyboardInterrupt:
+            os.write(quit_w, b'x')
+    thread.join()

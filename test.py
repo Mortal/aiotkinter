@@ -24,9 +24,13 @@ def async_cb(coro_fn, loop):
 def run_in_thread(function):
     quit_r, quit_w = os.pipe()
 
-    def sigint_handler(loop, cb):
+    keyboard_interrupt = None
+
+    def sigint_handler(loop, cb=None):
         def quit_readable():
             os.read(quit_r, 1)
+            if cb is None:
+                raise KeyboardInterrupt() from keyboard_interrupt
             cb()
 
         loop.add_reader(quit_r, quit_readable)
@@ -46,7 +50,8 @@ def run_in_thread(function):
         try:
             thread.join()
             break
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as exn:
+            keyboard_interrupt = exn
             os.write(quit_w, b'x')
     if uncaught_exception is not None:
         raise uncaught_exception

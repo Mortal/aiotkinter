@@ -1,0 +1,1 @@
+from aiotkinter.loop import TkinterEventLoopPolicy

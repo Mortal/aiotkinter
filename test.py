@@ -101,12 +101,13 @@ def main(sigint_handler):
     quit = tkinter.Button(root, text="QUIT",
                           command=async_cb(quit_action, loop))
     quit.pack()
+
     # The following three commands are needed so the window pops
     # up on top on Windows...
     root.iconify()
     root.update()
     root.deiconify()
-    # root.mainloop()
+
     asyncio.ensure_future(async_loop(), loop=loop)
     sigint_handler(loop, really_quit)
     loop.run_forever()

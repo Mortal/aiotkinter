@@ -3,11 +3,10 @@ import select
 import threading
 import traceback
 import asyncio
-import aiotkinter
 import tkinter
 import tkinter.messagebox
 
-from aiotkinter import askyesno
+from aiotkinter import askyesno, TkinterEventLoopPolicy
 
 
 async def async_loop():
@@ -86,7 +85,7 @@ def threaded_sigint_wrapper(fn):
 
 @threaded_sigint_wrapper
 def main(sigint_handler):
-    loop = aiotkinter.TkinterEventLoopPolicy().new_event_loop()
+    loop = TkinterEventLoopPolicy().new_event_loop()
 
     root = tkinter.Tk()
     text = "This is Tcl/Tk version %s" % tkinter.TclVersion

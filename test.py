@@ -3,8 +3,7 @@ import tkinter
 import tkinter.messagebox
 
 from aiotkinter import (
-    askyesno, TkinterEventLoopPolicy, async_cb,
-    threaded_sigint_wrapper,
+    askyesno, async_cb, wrapper,
 )
 
 
@@ -15,10 +14,8 @@ async def async_loop():
         print("Ping!")
 
 
-@threaded_sigint_wrapper
-def main(sigint_handler):
-    loop = TkinterEventLoopPolicy().new_event_loop()
-
+@wrapper
+def main(loop):
     root = tkinter.Tk()
     text = "This is Tcl/Tk version %s" % tkinter.TclVersion
     text += "\nThis should be a Ø"
@@ -30,13 +27,9 @@ def main(sigint_handler):
     test.pack()
     root.test = test
 
-    def really_quit():
-        root.destroy()
-        loop.stop()
-
     async def quit_action():
         if await askyesno('Quit?', 'Really quit?', root, loop):
-            really_quit()
+            loop.stop()
 
     root.protocol("WM_DELETE_WINDOW", async_cb(quit_action, loop))
     quit = tkinter.Button(root, text="QUIT",
@@ -50,8 +43,7 @@ def main(sigint_handler):
     root.deiconify()
 
     asyncio.ensure_future(async_loop(), loop=loop)
-    sigint_handler(loop, really_quit)
-    loop.run_forever()
+    return root
 
 
 if __name__ == '__main__':

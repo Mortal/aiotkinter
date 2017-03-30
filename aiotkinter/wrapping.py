@@ -1,6 +1,9 @@
 import os
 import tkinter
+import functools
 import threading
+
+from aiotkinter.loop import TkinterEventLoopPolicy
 
 
 def run_in_thread(function, max_ignored=1):
@@ -56,3 +59,16 @@ def run_in_thread(function, max_ignored=1):
 
 def threaded_sigint_wrapper(fn):
     return lambda: run_in_thread(fn)
+
+
+def wrapper(fn):
+    @functools.wraps(fn)
+    @threaded_sigint_wrapper
+    def wrapped(sigint_handler):
+        loop = TkinterEventLoopPolicy().new_event_loop()
+        root = fn(loop)  # type: tkinter.Tk
+        sigint_handler(loop, loop.stop)
+        loop.run_forever()
+        root.destroy()
+
+    return wrapped

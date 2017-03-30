@@ -105,7 +105,7 @@ def main(sigint_handler):
         if tkinter.messagebox.askyesno('Quit?', 'Really quit?', master=root):
             really_quit()
 
-    root.protocol("WM_DELETE_WINDOW", quit_action)
+    root.protocol("WM_DELETE_WINDOW", async_cb(quit_action, loop))
     quit = tkinter.Button(root, text="QUIT",
                           command=async_cb(quit_action, loop))
     quit.pack()

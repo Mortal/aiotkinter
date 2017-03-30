@@ -3,7 +3,6 @@ import tkinter
 
 
 class _TkinterSelector(asyncio.selectors._BaseSelectorImpl):
-
     def __init__(self):
         super().__init__()
         self._tk = tkinter.Tk(useTk=0)
@@ -42,8 +41,8 @@ class _TkinterSelector(asyncio.selectors._BaseSelectorImpl):
             token.deletetimerhandler()
         return self._ready
 
-class TkinterEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
 
+class TkinterEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
     def new_event_loop(self):
         try:
             return self._loop_factory(selector=_TkinterSelector())

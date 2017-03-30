@@ -100,9 +100,10 @@ class Dialog(tkinter.Toplevel):
         try:
             method = getattr(self, 'button_' + name)
         except AttributeError:
-            self.set_result(name)
+            pass
         else:
-            method()
+            return method()
+        self.set_result(name)
 
     def __await__(self):
         return self.result.__await__()

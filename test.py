@@ -107,4 +107,5 @@ def main(sigint_handler):
 
 
 if __name__ == '__main__':
+    tkinter.NoDefaultRoot()
     main()

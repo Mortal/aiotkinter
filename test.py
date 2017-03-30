@@ -31,7 +31,6 @@ def run_in_thread(function):
 
         loop.add_reader(quit_r, quit_readable)
 
-    function_exited = threading.Event()
     uncaught_exception = None
 
     def wrapper():
@@ -40,18 +39,15 @@ def run_in_thread(function):
         except Exception as exn:
             nonlocal uncaught_exception
             uncaught_exception = exn
-        finally:
-            function_exited.set()
 
     thread = threading.Thread(None, wrapper)
     thread.start()
     while True:
         try:
-            function_exited.wait()
+            thread.join()
             break
         except KeyboardInterrupt:
             os.write(quit_w, b'x')
-    thread.join()
     if uncaught_exception is not None:
         raise uncaught_exception
 

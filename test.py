@@ -21,9 +21,10 @@ def async_cb(coro_fn, loop):
     return cb
 
 
-def run_in_thread(function):
+def run_in_thread(function, max_ignored=1):
     quit_r, quit_w = os.pipe()
 
+    ignored = 0
     keyboard_interrupt = None
 
     def sigint_handler(loop, cb=None):
@@ -51,13 +52,18 @@ def run_in_thread(function):
         except ImportError:
             pass
 
-    thread = threading.Thread(None, wrapper)
+    # Set daemon=True to let the interpreter kill an un-cooperative thread
+    thread = threading.Thread(None, wrapper, daemon=True)
     thread.start()
     while True:
         try:
             thread.join()
             break
         except KeyboardInterrupt as exn:
+            if keyboard_interrupt is not None:
+                ignored += 1
+                if max_ignored and ignored >= max_ignored:
+                    raise
             keyboard_interrupt = exn
             os.write(quit_w, b'x')
     if uncaught_exception is not None:

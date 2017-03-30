@@ -1,6 +1,7 @@
 import os
 import select
 import threading
+import traceback
 import asyncio
 import aiotkinter
 import tkinter
@@ -15,8 +16,15 @@ async def async_loop():
 
 
 def async_cb(coro_fn, loop):
+    async def wrapper():
+        try:
+            return await coro_fn()
+        except Exception:
+            print('Unhandled exception in %s' % coro_fn.__name__)
+            traceback.print_exc()
+
     def cb():
-        asyncio.ensure_future(coro_fn(), loop=loop)
+        asyncio.ensure_future(wrapper(), loop=loop)
 
     return cb
 

@@ -43,6 +43,13 @@ def run_in_thread(function):
         except Exception as exn:
             nonlocal uncaught_exception
             uncaught_exception = exn
+        # Run GC collection to ensure that tkinter objects are collected in
+        # this thread and not the main thread.
+        try:
+            import gc
+            gc.collect()
+        except ImportError:
+            pass
 
     thread = threading.Thread(None, wrapper)
     thread.start()

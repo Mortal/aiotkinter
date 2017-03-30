@@ -21,7 +21,47 @@ def async_cb(coro_fn, loop):
     return cb
 
 
-def main():
+def run_in_thread(function):
+    quit_r, quit_w = os.pipe()
+
+    def sigint_handler(loop, cb):
+        def quit_readable():
+            os.read(quit_r, 1)
+            cb()
+
+        loop.add_reader(quit_r, quit_readable)
+
+    function_exited = threading.Event()
+    uncaught_exception = None
+
+    def wrapper():
+        try:
+            function(sigint_handler)
+        except Exception as exn:
+            nonlocal uncaught_exception
+            uncaught_exception = exn
+        finally:
+            function_exited.set()
+
+    thread = threading.Thread(None, wrapper)
+    thread.start()
+    while True:
+        try:
+            function_exited.wait()
+            break
+        except KeyboardInterrupt:
+            os.write(quit_w, b'x')
+    thread.join()
+    if uncaught_exception is not None:
+        raise uncaught_exception
+
+
+def sigint_wrapper(fn):
+    return lambda: run_in_thread(fn)
+
+
+@sigint_wrapper
+def main(sigint_handler):
     loop = aiotkinter.TkinterEventLoopPolicy().new_event_loop()
 
     root = tkinter.Tk()
@@ -43,10 +83,6 @@ def main():
         if tkinter.messagebox.askyesno('Quit?', 'Really quit?'):
             really_quit()
 
-    def quit_readable():
-        os.read(quit_r, 1)
-        really_quit()
-
     root.protocol("WM_DELETE_WINDOW", quit_action)
     quit = tkinter.Button(root, text="QUIT",
                           command=async_cb(quit_action, loop))
@@ -58,20 +94,9 @@ def main():
     root.deiconify()
     # root.mainloop()
     asyncio.ensure_future(async_loop(), loop=loop)
-    loop.add_reader(quit_r, quit_readable)
+    sigint_handler(loop, really_quit)
     loop.run_forever()
-    main_quitted.set()
 
 
 if __name__ == '__main__':
-    quit_r, quit_w = os.pipe()
-    main_quitted = threading.Event()
-    thread = threading.Thread(None, main)
-    thread.start()
-    while True:
-        try:
-            main_quitted.wait()
-            break
-        except KeyboardInterrupt:
-            os.write(quit_w, b'x')
-    thread.join()
+    main()

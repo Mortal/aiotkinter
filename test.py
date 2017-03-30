@@ -21,9 +21,9 @@ def main(loop):
     text += "\nThis should be a Ø"
     label = tkinter.Label(root, text=text)
     label.pack()
-    test = tkinter.Button(root, text="Click me!",
-              command=lambda: root.test.configure(
-                  text="[%s]" % root.test['text']))
+    test = tkinter.Button(
+        root, text="Click me!",
+        command=lambda: root.test.configure(text="[%s]" % root.test['text']))
     test.pack()
     root.test = test
 

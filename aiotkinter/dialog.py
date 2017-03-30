@@ -89,12 +89,16 @@ class Dialog(tkinter.Toplevel):
     def cancel(self, ev):
         self.set_result(None)
 
-    def set_result(self, value):
+    def close(self):
         self.withdraw()
         self.update_idletasks()
         self.parent.focus_set()
         self.destroy()
-        self.result.set_result(value)
+
+    def set_result(self, value):
+        self.close()
+        if not self.result.cancelled():
+            self.result.set_result(value)
 
     def command(self, name, *args):
         try:
@@ -110,5 +114,11 @@ class Dialog(tkinter.Toplevel):
 
 
 async def askyesno(title, message, parent, loop):
-    result = await Dialog(loop, parent, title, message, 'yesno')
+    dialog = Dialog(loop, parent, title, message, 'yesno')
+    result = await dialog
+    try:
+        result = await dialog
+    except asyncio.CancelledError:
+        dialog.close()
+        raise
     return 'yes' == result

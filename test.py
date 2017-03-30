@@ -1,12 +1,13 @@
 import os
 import select
 import threading
-import traceback
 import asyncio
 import tkinter
 import tkinter.messagebox
 
-from aiotkinter import askyesno, TkinterEventLoopPolicy
+from aiotkinter import (
+    askyesno, TkinterEventLoopPolicy, async_cb,
+)
 
 
 async def async_loop():
@@ -14,20 +15,6 @@ async def async_loop():
     while True:
         await asyncio.sleep(1)
         print("Ping!")
-
-
-def async_cb(coro_fn, loop):
-    async def wrapper():
-        try:
-            return await coro_fn()
-        except Exception:
-            print('Unhandled exception in %s' % coro_fn.__name__)
-            traceback.print_exc()
-
-    def cb():
-        asyncio.ensure_future(wrapper(), loop=loop)
-
-    return cb
 
 
 def run_in_thread(function, max_ignored=1):

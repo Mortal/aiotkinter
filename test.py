@@ -88,7 +88,7 @@ def main(sigint_handler):
         loop.stop()
 
     async def quit_action():
-        if tkinter.messagebox.askyesno('Quit?', 'Really quit?'):
+        if tkinter.messagebox.askyesno('Quit?', 'Really quit?', master=root):
             really_quit()
 
     root.protocol("WM_DELETE_WINDOW", quit_action)

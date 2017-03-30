@@ -78,7 +78,7 @@ def run_in_thread(function, max_ignored=1):
         raise uncaught_exception
 
 
-def sigint_wrapper(fn):
+def threaded_sigint_wrapper(fn):
     return lambda: run_in_thread(fn)
 
 
@@ -151,7 +151,7 @@ async def askyesno(title, message, parent, loop):
     return await d.result
 
 
-@sigint_wrapper
+@threaded_sigint_wrapper
 def main(sigint_handler):
     loop = aiotkinter.TkinterEventLoopPolicy().new_event_loop()
 

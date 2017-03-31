@@ -7,7 +7,7 @@ Requirements
 
 -  Unix platform (it doesn't work on Windows because of the lack of
    **Tcl\_CreateFileHandler** on this platform)
--  Python 3.3 + asyncio or Python >= 3.4
+-  Python >= 3.5
 
 Installation
 ============

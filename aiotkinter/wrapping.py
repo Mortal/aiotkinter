@@ -2,8 +2,13 @@ import os
 import tkinter
 import functools
 import threading
+import traceback
 
 from aiotkinter.loop import TkinterEventLoopPolicy
+
+
+class WrappedException(Exception):
+    pass
 
 
 def run_in_thread(function, max_ignored=1):
@@ -28,9 +33,11 @@ def run_in_thread(function, max_ignored=1):
     def wrapper():
         try:
             function(sigint_handler)
-        except Exception as exn:
+        except Exception:
+            # Use traceback.format_exc() to ensure that no tkinter
+            # objects leak out of the thread due to the exception handler.
             nonlocal uncaught_exception
-            uncaught_exception = exn
+            uncaught_exception = traceback.format_exc()
         # Run GC collection to ensure that tkinter objects are collected in
         # this thread and not the main thread.
         try:
@@ -54,7 +61,7 @@ def run_in_thread(function, max_ignored=1):
             keyboard_interrupt = exn
             os.write(quit_w, b'x')
     if uncaught_exception is not None:
-        raise uncaught_exception
+        raise WrappedException(uncaught_exception)
 
 
 def threaded_sigint_wrapper(fn):

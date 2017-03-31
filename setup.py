@@ -1,17 +1,12 @@
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import setup, Extension
+
 
 setup(name='aiotkinter',
-      author='montag451',
-      author_email='montag451 at laposte.net',
-      maintainer='montag451',
-      maintainer_email='montag451 at laposte.net',
-      url='https://github.com/montag451/aiotkinter',
+      author='Mathias Rav',
+      url='https://github.com/Mortal/aiotkinter',
       description='An asyncio API for the Tkinter event loop',
       long_description=open('README.rst').read(),
-      version='0.2',
+      version='0.3',
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
@@ -19,5 +14,5 @@ setup(name='aiotkinter',
           'Operating System :: Unix',
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.3'],
+          'Programming Language :: Python :: 3.6'],
       py_modules=['aiotkinter'])

@@ -68,7 +68,13 @@ def wrapper(fn):
         loop = TkinterEventLoopPolicy().new_event_loop()
         root = fn(loop)  # type: tkinter.Tk
         sigint_handler(loop, loop.stop)
-        loop.run_forever()
-        root.destroy()
+        try:
+            loop.run_forever()
+        finally:
+            try:
+                root.destroy()
+            except tkinter.TclError:
+                # Already destroyed?
+                pass
 
     return wrapped
